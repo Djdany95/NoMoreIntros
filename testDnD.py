@@ -1,11 +1,10 @@
 import os
 import stat
-import time
-import wx
+import datetime
+from wx import *
 from ObjectListView import ObjectListView, ColumnDefn
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 from moviepy.video.io.VideoFileClip import VideoFileClip
-import datetime
 
 
 ########################################################################
@@ -100,6 +99,7 @@ class MainFrame(wx.Frame):
         """Constructor"""
         wx.Frame.__init__(self, None, title="Test DnD", size=(600, 400))
         panel = MainPanel(self)
+        self.btn = wx.Button(panel, -1, "click Me")
         self.Show()
 
 # ----------------------------------------------------------------------
