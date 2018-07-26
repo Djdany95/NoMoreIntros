@@ -1,0 +1,18 @@
+{
+  "es": {
+    "emptyList": "There aren't videos",
+    "lblCutInitSec": "Seconds to cut at begin: ",
+    "lblCutEndSec": "Seconds to cut at end: ",
+    "chkDelete": " delete files when finish?",
+    "btnCut": "Cut",
+    "onlyVideosError": "Only can cut videos",
+    "onlyNumberError": "Input seconds in number",
+    "colName": "Name",
+    "colMinutes": "Lenght",
+    "colSize": "Size",
+    "cutVideos": " cut videos.",
+    "noCutVideosError": "There aren't videos to cut",
+    "deletedOld": "Deleted old videos.",
+    "permisionError": "Permission error when deleting."
+  }
+}

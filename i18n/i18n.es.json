@@ -1,0 +1,18 @@
+{
+  "es": {
+    "emptyList": "No hay videos",
+    "lblCutInitSec": "Segundos a cortar del inicio: ",
+    "lblCutEndSec": "Segundos a cortar del final: ",
+    "chkDelete": " Borrar archivos al terminar?",
+    "btnCut": "Cortar",
+    "onlyVideosError": "Solo se permiten videos",
+    "onlyNumberError": "Tiene que introducir los segundos con números",
+    "colName": "Nombre",
+    "colMinutes": "Duración",
+    "colSize": "Tamaño",
+    "cutVideos": " videos cortados.",
+    "noCutVideosError": "No hay videos para cortar",
+    "deletedOld": "Se han borrado los videos antiguos.",
+    "permisionError": "Error de permiso al borrar."
+  }
+}
