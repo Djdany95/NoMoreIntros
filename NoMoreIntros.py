@@ -1,11 +1,13 @@
-import os
-import stat
-import datetime
+from imageio.plugins.ffmpeg import download
+download()
+from os import stat
+from os.path import basename
+from stat import ST_SIZE
+from datetime import timedelta
 import wx
 from ObjectListView import ObjectListView, ColumnDefn
-from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 from moviepy.video.io.VideoFileClip import VideoFileClip
-import cutScript
+from CLIScript import check_list, cut_video, kill_ffmpeg, delete_files
 import i18n
 
 
@@ -36,7 +38,7 @@ class FileInfo(object):
     # ----------------------------------------------------------------------
     def __init__(self, path, minutes_lenght, size):
         """Constructor"""
-        self.name = os.path.basename(path)
+        self.name = path.basename(path)
         self.path = path
         self.minutes_lenght = minutes_lenght
         self.size = size
@@ -82,15 +84,15 @@ class MainPanel(wx.Panel):
     def updateDisplay(self, file_list):
         """"""
         for path in file_list:
-            file_stats = os.stat(path)
+            file_stats = stat(path)
             try:
                 clip = VideoFileClip(path)
             except:
                 wx.MessageBox(i18n.t('i18n.onlyVideosError'), "Error")
                 return
-            minutes_lenght = str(datetime.timedelta(
+            minutes_lenght = str(timedelta(
                 seconds=int(clip.duration)))
-            file_size = file_stats[stat.ST_SIZE]
+            file_size = file_stats[ST_SIZE]
             if file_size > 1024:
                 file_size = file_size / 1024.0
                 file_size = "%.2f KB" % file_size
@@ -123,8 +125,8 @@ class MainPanel(wx.Panel):
                 i18n.t('i18n.onlyNumberError'), "Error")
             return
 
-        if(cutScript.check_list(self.file_list) == True):
-            cutted = cutScript.cut_video(begin, end, self.file_list)
+        if(check_list(self.file_list) == True):
+            cutted = cut_video(begin, end, self.file_list)
             if(cutted.get('state')):
                 self.file_list.clear()
                 self.updateDisplay(self.file_list)
@@ -135,7 +137,7 @@ class MainPanel(wx.Panel):
             return
 
         if(delete == True and cutted.get('state') == True):
-            deleted = cutScript.delete_files(delete_file_list)
+            deleted = delete_files(delete_file_list)
 
         if(deleted):
             wx.MessageBox(i18n.t('i18n.deletedOld'), "OK")
@@ -169,7 +171,7 @@ def main():
     """"""
     i18n.set('locale', 'es')
     i18n.set('fallback', 'en')
-    i18n.load_path.append('./i18n/')
+    i18n.load_path.append('./lang/')
     app = wx.App(False)
     frame = MainFrame()
     app.MainLoop()
