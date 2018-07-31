@@ -13,6 +13,8 @@
     "cutVideos": " cut videos.",
     "noCutVideosError": "There aren't videos to cut",
     "deletedOld": "Deleted old videos.",
-    "permisionError": "Permission error when deleting."
+    "permisionError": "Permission error when deleting.",
+    "ffmpegError": "It's necessary to download the FFMPEG dependency, a message will be displayed when it finishes.",
+    "ffmpegDownloaded": "The download has finished, it's ready to use."
   }
 }

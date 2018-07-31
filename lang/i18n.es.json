@@ -13,6 +13,8 @@
     "cutVideos": " videos cortados.",
     "noCutVideosError": "No hay videos para cortar",
     "deletedOld": "Se han borrado los videos antiguos.",
-    "permisionError": "Error de permiso al borrar."
+    "permisionError": "Error de permiso al borrar.",
+    "ffmpegError": "Es necesario descargar la dependencia FFMPEG, se mostrará un mensaje cuando termine.",
+    "ffmpegDownloaded": "La descarga ha finalizad, está listo para usar."
   }
 }
