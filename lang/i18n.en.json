@@ -15,6 +15,8 @@
     "deletedOld": "Deleted old videos.",
     "permisionError": "Permission error when deleting.",
     "ffmpegError": "It's necessary to download the FFMPEG dependency, a message will be displayed when it finishes.",
-    "ffmpegDownloaded": "The download has finished, it's ready to use."
+    "ffmpegDownloaded": "The download has finished, it's ready to use.",
+    "progressTitle": "Downloading FFMPEG",
+    "progressMsg": "FFMPEG v3.2.4 (34.5 Mb)          Time estimated ~ 1 min"
   }
 }

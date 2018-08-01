@@ -1,6 +1,7 @@
 import datetime
 import os
 import stat
+import multiprocessing
 import i18n
 import wx
 from ObjectListView import ColumnDefn, ObjectListView
@@ -182,8 +183,19 @@ def check_ffmpeg():
         import CutScript
     except:
         wx.MessageBox(i18n.t('i18n.ffmpegError'), "Error")
-        ffmpeg.download()
-        wx.MessageBox(i18n.t('i18n.ffmpegDownloaded'), "OK")
+        threadDownload = multiprocessing.Process(target=ffmpeg.download)
+        threadDownload.start()
+        dialog = wx.ProgressDialog(
+            i18n.t('i18n.progressTitle'), i18n.t('i18n.progressMsg'), style=wx.PD_SMOOTH | wx.PD_CAN_ABORT)
+        while threadDownload.is_alive():
+            dialog.Pulse()
+            if dialog.WasCancelled() is True:
+                # TODO Test this
+                threadDownload.terminate()
+                return
+        else:
+            dialog.Destroy()
+            wx.MessageBox(i18n.t('i18n.ffmpegDownloaded'), "OK")
 
 
 def main():

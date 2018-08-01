@@ -15,6 +15,8 @@
     "deletedOld": "Se han borrado los videos antiguos.",
     "permisionError": "Error de permiso al borrar.",
     "ffmpegError": "Es necesario descargar la dependencia FFMPEG, se mostrará un mensaje cuando termine.",
-    "ffmpegDownloaded": "La descarga ha finalizad, está listo para usar."
+    "ffmpegDownloaded": "La descarga ha finalizad, está listo para usar.",
+    "progressTitle": "Descargando FFMPEG",
+    "progressMsg": "FFMPEG v3.2.4 (34.5 Mb)          Tiempo estimado ~ 1 min"
   }
 }
