@@ -1,11 +1,13 @@
+import os
+import time
+import psutil
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 from moviepy.video.io.VideoFileClip import VideoFileClip
-import os
-import psutil
-import time
 
 
+# ----------------------------------------------------------------------
 def get_video_duration(path):
+    """Get the duration of the passed file and returns it if valid or raise an exception if invalid"""
     try:
         clip = VideoFileClip(path)
     except:
@@ -20,28 +22,31 @@ def get_video_duration(path):
         return int(clip.duration)
 
 
-def cut_video(begin, end, file_list):
-
-    c = 0
-
-    for i in file_list:
-        try:
-            video = VideoFileClip(i.path)
-        except Exception as e:
-            continue
+# ----------------------------------------------------------------------
+def cut_video(beginning, end, file):
+    """Cut seconds to the passed video in the beginning and in the end, returns True if all OK or False if fails"""
+    try:
+        video = VideoFileClip(file.path)
         ffmpeg_extract_subclip(
-            i.path.replace('\\', '/'), int(begin), video.duration-int(end), targetname=i.path.replace('\\', '/')[:-4]+'n'+i.path[len(i.path)-4:])
+            file.path.replace('\\', '/'), int(beginning), video.duration-int(end),
+            targetname=file.path.replace('\\', '/')[:-4]+'n' +
+            file.path[len(file.path)-4:])
 
         video.reader.close()
         video.audio.reader.close_proc()
         video.close()
 
-        c = c+1
+        return {'state': True}
+    except:
+        video.reader.close()
+        video.audio.reader.close_proc()
+        video.close()
+        return {'state': False}
 
-    return {'state': True, 'num': str(c)}
 
-
+# ----------------------------------------------------------------------
 def delete_files(files_delete):
+    """Delete all files in the passed list, killing FFMPEG before because of write permission"""
     kill_ffmpeg()
     time.sleep(0.5)
     for i in files_delete:
@@ -52,7 +57,9 @@ def delete_files(files_delete):
     return True
 
 
+# ----------------------------------------------------------------------
 def kill_ffmpeg():
+    """Kill FFMPEG process because of write permission"""
     for proc in psutil.process_iter():
         if 'ffmpeg' in proc.name():
             print(proc.name)

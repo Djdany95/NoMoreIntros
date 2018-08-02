@@ -1,36 +1,45 @@
 import datetime
+import multiprocessing
 import os
 import stat
-import multiprocessing
 import i18n
 import wx
-from ObjectListView import ColumnDefn, ObjectListView
 from imageio.plugins import ffmpeg
+from ObjectListView import ColumnDefn, ObjectListView
 
 
 ########################################################################
 class MyFileDropTarget(wx.FileDropTarget):
-    """"""
+    """Class who defines the FileDropTarget and removes the duplicated files"""
 
     # ----------------------------------------------------------------------
     def __init__(self, window):
         """Constructor"""
         wx.FileDropTarget.__init__(self)
         self.window = window
+        self.all_filenames = []
 
     # ----------------------------------------------------------------------
     def OnDropFiles(self, x, y, filenames):
-        """
-        When files are dropped, update the display
-        """
+        """When files are dropped, update the display """
+        self.RemoveDuplicated(self.all_filenames, filenames)
+        self.all_filenames += filenames
         self.window.updateDisplay(filenames)
         return True
+
+    # ----------------------------------------------------------------------
+    def RemoveDuplicated(self, X, Y):
+        """Get two lists and remove duplications in Y (filenames)"""
+        for A in X:
+            for B in Y:
+                if A == B:
+                    Y.remove(B)
 
 ########################################################################
 
 
 class FileInfo(object):
-    """"""
+    """Class who defines de FileInfo object used in dropped items"""
 
     # ----------------------------------------------------------------------
     def __init__(self, path, minutes_lenght, size):
@@ -44,11 +53,15 @@ class FileInfo(object):
 
 
 class MainPanel(wx.Panel):
-    """"""
+    """Main Panel of the application"""
 
     # ----------------------------------------------------------------------
     def __init__(self, parent):
-        """Constructor"""
+        """
+        Constructor
+        Defines the ObjectListView for dropped items
+        and the layout for its components
+        """
         wx.Panel.__init__(self, parent=parent)
         self.file_list = []
 
@@ -56,7 +69,7 @@ class MainPanel(wx.Panel):
         self.olv = ObjectListView(self, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
         self.olv.SetEmptyListMsg(i18n.t('i18n.emptyList'))
         self.olv.SetDropTarget(file_drop_target)
-        self.olv.cellEditMode = ObjectListView.CELLEDIT_DOUBLECLICK
+        self.olv.cellEditMode = ObjectListView.CELLEDIT_NONE
         self.setFiles()
 
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -88,14 +101,17 @@ class MainPanel(wx.Panel):
 
     # ----------------------------------------------------------------------
     def updateDisplay(self, file_list):
+        """
+        Triggered when dropped items, 
+        get the item and transform it into FileInfo with parameters
+        to use it in ObjectListView
+        """
         import CutScript
-        """"""
         for path in file_list:
             file_stats = os.stat(path)
             try:
                 clip_duration = CutScript.get_video_duration(path)
-            except Exception as e:
-                print(e)
+            except:
                 wx.MessageBox(i18n.t('i18n.onlyVideosError'), "Error")
                 return
             minutes_lenght = str(datetime.timedelta(
@@ -105,69 +121,96 @@ class MainPanel(wx.Panel):
                 file_size = file_size / 1024.0
                 file_size = "%.2f KB" % file_size
 
-            self.file_list.append(FileInfo(path,
-                                           minutes_lenght,
-                                           file_size))
+            self.file_list.append(FileInfo(path, minutes_lenght, file_size))
 
         self.olv.SetObjects(self.file_list)
 
     # ----------------------------------------------------------------------
     def setFiles(self):
-        """"""
+        """Set the columns for items dropped"""
         self.olv.SetColumns([
-            ColumnDefn(i18n.t('i18n.colName'), "left", 250, "name"),
+            ColumnDefn(i18n.t('i18n.colName'), "left",
+                       250, "name", isSpaceFilling=True),
             ColumnDefn(i18n.t('i18n.colMinutes'),
-                       "left", 150, "minutes_lenght"),
-            ColumnDefn(i18n.t('i18n.colSize'), "left", 150, "size")
+                       "right", 150, "minutes_lenght"),
+            ColumnDefn(i18n.t('i18n.colSize'), "right", 150, "size")
         ])
         self.olv.SetObjects(self.file_list)
 
+    # ----------------------------------------------------------------------
     def OnCut(self, event):
+        """
+        Trigger when click on CUT Button,
+        Get parameters and in a for loop cut videos calling the function
+        """
         import CutScript
         try:
-            begin = int(self.txtCutInitSec.GetLineText(1))
+            beginning = int(self.txtCutInitSec.GetLineText(1))
             end = int(self.txtCutEndSec.GetLineText(1))
             delete = self.chkDelete.GetValue()
-            delete_file_list = self.file_list.copy()
+            delete_file_list = list()
         except:
             wx.MessageBox(
                 i18n.t('i18n.onlyNumberError'), "Error")
             return
 
         if self.file_list:
-            cutted = CutScript.cut_video(begin, end, self.file_list)
-            if(cutted.get('state')):
-                self.file_list.clear()
-                self.updateDisplay(self.file_list)
-                wx.MessageBox(cutted.get('num') +
-                              i18n.t('i18n.cutVideos'), "OK")
+            c = 0
+            list_count = len(self.file_list)
+            dialog = wx.ProgressDialog(i18n.t('i18n.cutProgressTitle'),
+                                       i18n.t('i18n.cutProgress') +
+                                       str(c)+'/'+str(list_count),
+                                       maximum=list_count, style=wx.PD_SMOOTH |
+                                       wx.PD_CAN_ABORT | wx.PD_AUTO_HIDE)
+            for file in self.file_list:
+                cut = CutScript.cut_video(beginning, end, file)
+                if(cut.get('state')):
+                    delete_file_list.append(file)
+                    c += 1
+                    if dialog.WasCancelled() is True:
+                        wx.MessageBox(i18n.t('i18n.cutCancel'), "Error")
+                        break
+                    dialog.Update(c, i18n.t('i18n.cutProgress') +
+                                  str(c+1)+'/'+str(list_count))
+            for file in delete_file_list:
+                self.file_list.remove(file)
+            self.olv.RemoveObjects(delete_file_list)
+            self.olv.SetObjects(self.file_list)
+            wx.MessageBox(str(c) +
+                          i18n.t('i18n.cutVideos'), "OK")
         else:
             wx.MessageBox(i18n.t('i18n.noCutVideosError'), "Error")
             return
 
-        if(delete is True and cutted.get('state') is True):
+        if(delete is True):
             try:
                 CutScript.delete_files(delete_file_list)
                 wx.MessageBox(i18n.t('i18n.deletedOld'), "OK")
             except:
                 wx.MessageBox(i18n.t('i18n.permisionError'), "Error")
 
+    # ----------------------------------------------------------------------
     def OnDelete(self, event):
-        if(event.GetUnicodeKey() == 127 and self.olv.GetSelectedItemCount() > 0):
+        """Trigger the event when user delete item from list with SUPR"""
+        if(event.GetUnicodeKey() == 127 and
+           self.olv.GetSelectedItemCount() > 0):
             for i in self.olv.GetSelectedObjects():
                 self.file_list.remove(i)
             self.olv.RemoveObjects(self.olv.GetSelectedObjects())
-            self.updateDisplay(self.file_list)
+            self.olv.SetObjects(self.file_list)
 
 ########################################################################
 
 
 class MainFrame(wx.Frame):
-    """"""
+    """Main window of the application"""
 
     # ----------------------------------------------------------------------
     def __init__(self):
-        """Constructor"""
+        """
+        Constructor
+        Sets width, name and icon of the window
+        """
         wx.Frame.__init__(self, None, title="NoMoreIntros", size=(570, 400))
         panel = MainPanel(self)
         ico = wx.Icon('icon.ico', wx.BITMAP_TYPE_ICO)
@@ -175,31 +218,37 @@ class MainFrame(wx.Frame):
         self.SetMinSize(wx.Size(570, 400))
         self.Show()
 
-# ----------------------------------------------------------------------
+########################################################################
 
 
 def check_ffmpeg():
+    """Checks before all if user has FFMPEG dependency, if not downloads it"""
     try:
         import CutScript
     except:
-        wx.MessageBox(i18n.t('i18n.ffmpegError'), "Error")
+        wx.MessageBox(i18n.t('i18n.ffmpegNotFound'), "Error")
         threadDownload = multiprocessing.Process(target=ffmpeg.download)
         threadDownload.start()
         dialog = wx.ProgressDialog(
-            i18n.t('i18n.progressTitle'), i18n.t('i18n.progressMsg'), style=wx.PD_SMOOTH | wx.PD_CAN_ABORT)
+            i18n.t('i18n.ffmpegProgressTitle'),
+            i18n.t('i18n.ffmpegProgressMsg'),
+            maximum=1, style=wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT)
         while threadDownload.is_alive():
             dialog.Pulse()
             if dialog.WasCancelled() is True:
-                # TODO Test this
                 threadDownload.terminate()
+                wx.MessageBox(i18n.t('i18n.ffmpegCancel'), "Error")
                 return
         else:
-            dialog.Destroy()
+            dialog.Update(1)
             wx.MessageBox(i18n.t('i18n.ffmpegDownloaded'), "OK")
 
 
 def main():
-    """"""
+    """
+    Main loop
+    Sets i18n, check FFMPEG dependency and init the MainWindow
+    """
     i18n.set('locale', 'es')
     i18n.set('fallback', 'en')
     i18n.load_path.append('./lang/')
@@ -210,4 +259,5 @@ def main():
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support() # Needed to use multiprocessing with pyinstaller
     main()
