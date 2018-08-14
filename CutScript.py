@@ -16,10 +16,11 @@ def get_video_duration(path):
         clip.close()
         raise Exception
     else:
+        duration = int(clip.duration)
         clip.reader.close()
         clip.audio.reader.close_proc()
         clip.close()
-        return int(clip.duration)
+        return duration
 
 
 # ----------------------------------------------------------------------
@@ -27,15 +28,12 @@ def cut_video(beginning, end, file):
     """Cut seconds to the passed video in the beginning and in the end, returns True if all OK or False if fails"""
     try:
         video = VideoFileClip(file.path)
-        ffmpeg_extract_subclip(
-            file.path.replace('\\', '/'), int(beginning), video.duration-int(end),
-            targetname=file.path.replace('\\', '/')[:-4]+'n' +
-            file.path[len(file.path)-4:])
-
+        ffmpeg_extract_subclip(file.path.replace('\\', '/'),
+                               int(beginning), video.duration-int(end),
+                               targetname=file.path.replace('\\', '/')[:-4]+'n' + file.path[len(file.path)-4:])
         video.reader.close()
         video.audio.reader.close_proc()
         video.close()
-
         return {'state': True}
     except:
         video.reader.close()

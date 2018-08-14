@@ -102,7 +102,7 @@ class MainPanel(wx.Panel):
     # ----------------------------------------------------------------------
     def updateDisplay(self, file_list):
         """
-        Triggered when dropped items, 
+        Triggered when dropped items,
         get the item and transform it into FileInfo with parameters
         to use it in ObjectListView
         """
@@ -259,5 +259,5 @@ def main():
 
 
 if __name__ == "__main__":
-    multiprocessing.freeze_support() # Needed to use multiprocessing with pyinstaller
+    multiprocessing.freeze_support()  # Needed to use multiprocessing with pyinstaller
     main()
