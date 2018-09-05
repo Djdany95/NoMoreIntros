@@ -5,7 +5,12 @@ import stat
 import i18n
 import wx
 from imageio.plugins import ffmpeg
-from ObjectListView import ColumnDefn, ObjectListView
+from ObjectListView import ColumnDefn, FastObjectListView
+
+
+foreDarkColor = wx.Colour(205,208,213)
+backDarkColor = wx.Colour(45,48,53)
+btnBackDarkColor = wx.Colour(35, 37, 41)
 
 
 ########################################################################
@@ -65,39 +70,65 @@ class MainPanel(wx.Panel):
         wx.Panel.__init__(self, parent=parent)
         self.file_list = []
 
+        self.backColor=backDarkColor
+        self.btnBackColor=btnBackDarkColor
+        self.foreColor=foreDarkColor
+
+        self.SetBackgroundColour(self.backColor)
+        self.SetForegroundColour(self.foreColor)
+
         file_drop_target = MyFileDropTarget(self)
-        self.olv = ObjectListView(self, style=wx.LC_REPORT | wx.SUNKEN_BORDER)
+        self.olv = FastObjectListView(self, style=wx.LC_REPORT | wx.BORDER_NONE)
         self.olv.SetEmptyListMsg(i18n.t('i18n.emptyList'))
         self.olv.SetDropTarget(file_drop_target)
-        self.olv.cellEditMode = ObjectListView.CELLEDIT_NONE
+        self.olv.cellEditMode = FastObjectListView.CELLEDIT_NONE
         self.setFiles()
 
-        sizer = wx.BoxSizer(wx.VERTICAL)
+        self.sizer = wx.BoxSizer(wx.VERTICAL)
         self.olv.Bind(wx.EVT_KEY_UP, self.OnDelete)
-        sizer.Add(self.olv, 1, wx.EXPAND)
+        self.sizer.Add(self.olv, 1, wx.EXPAND)
 
         grid1 = wx.GridSizer(1, 3, 1, 10)
         grid2 = wx.GridSizer(1, 3, 1, 10)
+
         self.lblCutInitSec = wx.StaticText(
             self, -1, i18n.t('i18n.lblCutInitSec'))
-        self.txtCutInitSec = wx.TextCtrl(self, -1, "0", size=(175, -1))
+        self.lblCutInitSec.SetFont(wx.Font(wx.FontInfo(pointSize=12)))
+
+        self.txtCutInitSec = wx.TextCtrl(self, -1, "0", size=(175, -1), style=wx.BORDER_STATIC)
+        self.txtCutInitSec.SetBackgroundColour(self.btnBackColor)
+        self.txtCutInitSec.SetForegroundColour(self.foreColor)
+        self.txtCutInitSec.SetFont(wx.Font(wx.FontInfo(pointSize=12)))
+
         self.lblCutEndSec = wx.StaticText(
             self, -1, i18n.t('i18n.lblCutEndSec'))
-        self.txtCutEndSec = wx.TextCtrl(self, -1, "0", size=(175, -1))
+        self.lblCutEndSec.SetFont(wx.Font(wx.FontInfo(pointSize=12)))
+
+        self.txtCutEndSec = wx.TextCtrl(self, -1, "0", size=(175, -1), style=wx.BORDER_STATIC)
+        self.txtCutEndSec.SetBackgroundColour(self.btnBackColor)
+        self.txtCutEndSec.SetForegroundColour(self.foreColor)
+        self.txtCutEndSec.SetFont(wx.Font(wx.FontInfo(pointSize=12)))
+
         self.chkDelete = wx.CheckBox(self, -1, i18n.t('i18n.chkDelete'))
+        self.chkDelete.SetFont(wx.Font(wx.FontInfo(pointSize=12)))
+
         grid1.AddMany([self.lblCutInitSec, self.lblCutEndSec])
         grid1.AddSpacer(0)
         grid2.AddMany([self.txtCutInitSec, self.txtCutEndSec, self.chkDelete])
 
         self.btnCut = wx.Button(
-            self, -1, i18n.t('i18n.btnCut'), size=(100, 50))
+            self, -1, i18n.t('i18n.btnCut'), size=(100, 50), style=wx.BORDER_NONE)
         self.btnCut.Bind(wx.EVT_BUTTON, self.OnCut)
-        sizer.AddSpacer(20)
-        sizer.Add(grid1, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 10)
-        sizer.Add(grid2, 0, wx.EXPAND | wx.LEFT, 10)
-        sizer.AddSpacer(20)
-        sizer.Add(self.btnCut, 0, wx.EXPAND)
-        self.SetSizer(sizer)
+        self.btnCut.SetBackgroundColour(self.btnBackColor)
+        self.btnCut.SetForegroundColour(self.foreColor)
+        self.btnCut.SetFont(wx.Font(wx.FontInfo(pointSize=30)))
+
+        self.sizer.AddSpacer(20)
+        self.sizer.Add(grid1, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 10)
+        self.sizer.Add(grid2, 0, wx.EXPAND | wx.LEFT, 10)
+        self.sizer.AddSpacer(20)
+        self.sizer.Add(self.btnCut, 0, wx.EXPAND)
+        self.SetSizer(self.sizer)
 
     # ----------------------------------------------------------------------
     def updateDisplay(self, file_list):
