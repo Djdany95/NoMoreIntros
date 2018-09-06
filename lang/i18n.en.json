@@ -1,5 +1,12 @@
 {
   "en": {
+    "menu1Title": "Settings",
+    "themeMenu": "Theme",
+    "lightTheme": "Light",
+    "darkTheme": "Dark",
+    "langMenu": "Language",
+    "checkUpdatesMenu": "Check updates...",
+    "quit": "Quit",
     "ffmpegNotFound": "FFMPEG dependency hasn't found on your computer, it's necessary to download it.",
     "ffmpegProgressTitle": "Downloading FFMPEG...",
     "ffmpegProgressMsg": "FFMPEG v3.2.4 (34.5 Mb)          Time estimated ~ 1 min ~",

@@ -3,10 +3,10 @@
 block_cipher = None
 
 
-a = Analysis(['NoMoreIntrosDark.py'],
-             pathex=['./NoMoreIntrosDark'],
+a = Analysis(['NoMoreIntros.py'],
+             pathex=['./NoMoreIntros'],
              binaries=[],
-             datas=[( './bin', './bin' ), ( './lang', './lang' ), ( 'icon.ico', '.' )],
+             datas=[( './bin', './bin' ), ( './lang', './lang' ), ( 'icon.ico', '.' ), ( 'config.json', '.' )],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -19,7 +19,7 @@ pyz = PYZ(a.pure, a.zipped_data,
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
-          name='NoMoreIntrosDark',
+          name='NoMoreIntros',
           debug=False,
           strip=False,
           upx=True,
@@ -30,4 +30,4 @@ coll = COLLECT(exe,
                a.datas,
                strip=False,
                upx=True,
-               name='NoMoreIntrosDark')
+               name='NoMoreIntros')
