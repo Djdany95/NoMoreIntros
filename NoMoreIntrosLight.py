@@ -258,21 +258,28 @@ def check_ffmpeg():
         import CutScript
     except:
         wx.MessageBox(i18n.t('i18n.ffmpegNotFound'), "Error")
-        threadDownload = multiprocessing.Process(target=ffmpeg.download)
-        threadDownload.start()
+        if(os.path.isdir(os.getenv('LOCALAPPDATA'))):
+            thread = multiprocessing.Process(target=copy_ffmpeg)
+        else:
+            threads = multiprocessing.Process(target=ffmpeg.download)
+        thread.start()
         dialog = wx.ProgressDialog(
             i18n.t('i18n.ffmpegProgressTitle'),
             i18n.t('i18n.ffmpegProgressMsg'),
             maximum=1, style=wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT)
-        while threadDownload.is_alive():
+        while thread.is_alive():
             dialog.Pulse()
             if dialog.WasCancelled() is True:
-                threadDownload.terminate()
+                thread.terminate()
                 wx.MessageBox(i18n.t('i18n.ffmpegCancel'), "Error")
                 return
         else:
             dialog.Update(1)
             wx.MessageBox(i18n.t('i18n.ffmpegDownloaded'), "OK")
+
+def copy_ffmpeg():
+    """Copy ffmpeg file directly without downloading for windows users"""
+    os.system('xcopy /E /I /Y "bin/imageio" "'+os.getenv('LOCALAPPDATA')+'/imageio"')
 
 
 def main():
