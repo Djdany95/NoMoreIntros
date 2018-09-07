@@ -299,29 +299,27 @@ class MainFrame(wx.Frame):
             raise SystemExit
         elif(id == 1):
             if(nmiConfig.setTheme("lightTheme") == True):
-                print("now i see it all")
-            else:
-                print("man that was light enough")
+                self.reloadApp()
         elif(id == 2):
             if(nmiConfig.setTheme("darkTheme") == True):
-                print("now im lee")
-            else:
-                print("man that was dark enough")
+                self.reloadApp()
         elif(id == 3):
             if(nmiConfig.setLanguage("es") == True):
-                print("Abajo duermo yo")
-            else:
-                print("Y arriba españa!")
+                self.reloadApp()
         elif(id == 4):
             if(nmiConfig.setLanguage("en") == True):
-                print("A cup of tea please")
-            else:
-                print("Waterloo was very cool!")
+                self.reloadApp()
         elif(id == 5):
             if(nmiConfig.setVersion(1.0) == True):
-                print("Now im better than you")
+                print("Ahora es 1.0")
             else:
-                print("Wow im too cool, wait for update me!")
+                print("Ya era 1.0")
+
+    # ----------------------------------------------------------------------
+    def reloadApp(self):
+        self.Close()
+        main(nmiConfig.getLanguage(), nmiConfig.getTheme())
+        raise SystemExit
 
 ########################################################################
 
@@ -336,20 +334,25 @@ def check_ffmpeg():
             thread = multiprocessing.Process(target=copy_ffmpeg)
         else:
             thread = multiprocessing.Process(target=ffmpeg.download)
-        thread.start()
-        dialog = wx.ProgressDialog(
-            i18n.t('i18n.ffmpegProgressTitle'),
-            i18n.t('i18n.ffmpegProgressMsg'),
-            maximum=1, style=wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT)
-        while thread.is_alive():
-            dialog.Pulse()
-            if dialog.WasCancelled() is True:
-                thread.terminate()
-                wx.MessageBox(i18n.t('i18n.ffmpegCancel'), "Error")
-                return
-        else:
-            dialog.Update(1)
-            wx.MessageBox(i18n.t('i18n.ffmpegDownloaded'), "OK")
+        progressDialog(thread, i18n.t('i18n.ffmpegProgressTitle'), i18n.t(
+            'i18n.ffmpegProgressMsg'), i18n.t('i18n.ffmpegCancel'))
+
+
+def progressDialog(thread, title, msg, error):
+    thread.start()
+    dialog = wx.ProgressDialog(
+        title,
+        msg,
+        maximum=1, style=wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT)
+    while thread.is_alive():
+        dialog.Pulse()
+        if dialog.WasCancelled() is True:
+            thread.terminate()
+            wx.MessageBox(error, "Error")
+            return
+    else:
+        dialog.Update(1)
+        wx.MessageBox(i18n.t('i18n.ffmpegDownloaded'), "OK")
 
 
 def copy_ffmpeg():
@@ -374,4 +377,5 @@ def main(lang, theme):
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()  # Needed to use multiprocessing with pyinstaller
+    nmiConfig.getConfig()
     main(nmiConfig.getLanguage(), nmiConfig.getTheme())

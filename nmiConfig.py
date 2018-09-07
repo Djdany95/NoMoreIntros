@@ -1,4 +1,5 @@
 import json
+import urllib.request
 from wx import Colour
 
 themes = {"darkTheme": {
@@ -12,61 +13,102 @@ themes = {"darkTheme": {
     "foregroundColor": Colour(72, 72, 72)
 }}
 
+config = {"version": 1.0, "language": "es", "theme": "lightTheme"}
 
-def getTheme():
-    configFile = open('config.json').read()
-    config = json.loads(configFile)
-    return themes.get(config.get("theme"))
 
-def setTheme(theme):
-    configFile = open('config.json').read()
-    tempFile = json.loads(configFile)
-    if(getTheme==theme):
-        return False
-    tempFile["theme"] = theme
+def getConfig():
+    try:
+        configFile = open('config.json').read()
+        config = json.loads(configFile)
+        return config
+    except:
+        setConfig()
 
+
+def setConfig():
     with open('config.json', 'w') as configFile:
-        json.dump(tempFile, configFile)
+        json.dump(config, configFile)
         configFile.close()
 
-    getTheme()
+    getConfig()
+
+
+def getTheme():
+    config = getConfig()
+    return themes.get(config.get("theme"))
+
+
+def getThemeName():
+    config = getConfig()
+    return config.get("theme")
+
+
+def setTheme(theme):
+    config = getConfig()
+    if(getThemeName() == theme):
+        return False
+    config["theme"] = theme
+
+    with open('config.json', 'w') as configFile:
+        json.dump(config, configFile)
+        configFile.close()
+
+    return True
 
 
 def getLanguage():
-    configFile = open('config.json').read()
-    config = json.loads(configFile)
+    config = getConfig()
     return config.get("language")
 
+
 def setLanguage(language):
-    configFile = open('config.json').read()
-    tempFile = json.loads(configFile)
-    if(getLanguage==language):
+    config = getConfig()
+    if(getLanguage() == language):
         return False
-    tempFile["language"] = language
+    config["language"] = language
 
     with open('config.json', 'w') as configFile:
-        json.dump(tempFile, configFile)
+        json.dump(config, configFile)
         configFile.close()
 
     return True
 
 
 def getVersion():
-    configFile = open('config.json').read()
-    config = json.loads(configFile)
+    config = getConfig()
     return config.get("version")
 
-def setVersion(version):
-    configFile = open('config.json').read()
-    tempFile = json.loads(configFile)
-    if(getVersion==version):
+
+def getLatestVersion():
+    response = urllib.request.urlopen(
+        "https://api.github.com/repos/djdany01/nomoreintros/releases/latest").read()
+    response = json.loads(response)
+    latestVersion = {"version": float(response.get("tag_name")), "url": response.get("assets")[0].get("browser_download_url")}
+    return latestVersion
+
+
+def checkUpdate():
+    actual = getVersion()
+    latest = getLatestVersion().get("version")
+    if(actual < latest):
+        return True
+    else:
         return False
-    tempFile["version"] = version
+
+
+def downloadLatestVersion():
+    latestUrl = getLatestVersion().get("url")
+    urllib.request.urlretrieve(latestUrl, "update.zip")
+
+
+def setVersion(version):
+    config = getConfig()
+    if(getVersion() == version):
+        return False
+    config["version"] = version
 
     with open('config.json', 'w') as configFile:
-        json.dump(tempFile, configFile)
+        json.dump(config, configFile)
         configFile.close()
 
     return True
-
-getLanguage()
