@@ -25,5 +25,4 @@ pyinstaller nomoreintros.spec
 ---
 ### TODOs
 
-- [ ] Better icon
 - [ ] Linux and MacOS compatibility
