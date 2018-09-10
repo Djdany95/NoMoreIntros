@@ -1,14 +1,28 @@
-# NoMoreIntros
+# NoMoreIntros EN
 
-Application to cut videos in the beginning and the end.
+Application to cut the beginning and the end of videos.
 
 You can use it to cut away that series, anime, films intros/credits in a batch process.
 
 ## Build
-There are 2 methods:
-- Windows users with 7zip, can use build script: *python build.py*
-- Others: *pyinstaller nomoreintros['theme'].spec*
+```
+pyinstaller nomoreintros.spec
+```
 
+---
+
+# NoMoreIntros ES
+
+Aplicación para cortar el inicio y el final de los vídeos.
+
+Puedes usarlo para quitar las Intros/Creditos de series, anime y peliculas a la vez.
+
+## Compilación
+```
+pyinstaller nomoreintros.spec
+```
+
+---
 ### TODOs
 
 - [ ] Better icon

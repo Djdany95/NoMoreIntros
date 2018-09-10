@@ -106,3 +106,6 @@ venv.bak/
 
 # My .gitignore
 config.json
+/NoMoreIntros
+NoMoreIntrosPortable.zip
+NMI-Installer.exe

@@ -4,9 +4,9 @@ block_cipher = None
 
 
 a = Analysis(['NoMoreIntros.py'],
-             pathex=['./NoMoreIntros'],
+             pathex=['./'],
              binaries=[],
-             datas=[( './bin', './bin' ), ( './lang', './lang' ), ( 'icon.ico', '.' ), ( 'config.json', '.' )],
+             datas=[( './bin', './bin' ), ( './lang', './lang' ), ( 'NoMoreIntros.ico', '.' ), ( 'config.json', '.' )],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -23,7 +23,7 @@ exe = EXE(pyz,
           debug=False,
           strip=False,
           upx=True,
-          console=False )
+          console=False, icon='NoMoreIntros.ico' )
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,

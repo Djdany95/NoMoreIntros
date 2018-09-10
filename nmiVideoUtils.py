@@ -4,6 +4,18 @@ import psutil
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 from moviepy.video.io.VideoFileClip import VideoFileClip
 
+class VideoInfo(object):
+    """Class who defines de VideoInfo object used in dropped items"""
+
+    # ----------------------------------------------------------------------
+    def __init__(self, path, minutes_lenght, size):
+        """Constructor"""
+        self.name = os.path.basename(path)
+        self.path = path
+        self.minutes_lenght = minutes_lenght
+        self.size = size
+
+########################################################################
 
 # ----------------------------------------------------------------------
 def get_video_duration(path):
@@ -43,11 +55,11 @@ def cut_video(beginning, end, file):
 
 
 # ----------------------------------------------------------------------
-def delete_files(files_delete):
-    """Delete all files in the passed list, killing FFMPEG before because of write permission"""
+def delete_videos(videos_delete):
+    """Delete all videos in the passed list, killing FFMPEG before because of write permission"""
     kill_ffmpeg()
     time.sleep(0.5)
-    for i in files_delete:
+    for i in videos_delete:
         try:
             os.remove(i.path)
         except:
