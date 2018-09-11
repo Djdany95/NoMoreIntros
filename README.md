@@ -6,6 +6,7 @@ You can use it to cut away that series, anime, films intros/credits in a batch p
 
 ## Build
 ```
+pip3 install -r requirements.txt
 pyinstaller nomoreintros.spec
 ```
 
@@ -19,6 +20,7 @@ Puedes usarlo para quitar las Intros/Creditos de series, anime y peliculas a la 
 
 ## Compilación
 ```
+pip3 install -r requirements.txt
 pyinstaller nomoreintros.spec
 ```
 
