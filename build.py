@@ -11,4 +11,4 @@ os.system('pyinstaller nomoreintros.spec --distpath ./NoMoreIntros --clean')
 # 2 7ZIP Creates .zip to portable application
 os.system(zipEXE + ' -mx=9 a "./NMI-Portable.zip" "./NoMoreIntros/NoMoreIntros"')
 # 3 NSIS Creates installer to application
-os.system(nsisEXe + ' ' + outputInstaller)
+os.system(nsisEXE + ' ' + outputInstaller)

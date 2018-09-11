@@ -94,7 +94,6 @@ ${INSTALL_TYPE}
 SetOverwrite ifnewer
 SetOutPath "$INSTDIR"
 File "C:\Users\daniel.perez\Documents\pruebas\TestPy\NoMoreIntros\NoMoreIntros\NoMoreIntros\base_library.zip"
-File "C:\Users\daniel.perez\Documents\pruebas\TestPy\NoMoreIntros\NoMoreIntros\NoMoreIntros\config.json"
 File "C:\Users\daniel.perez\Documents\pruebas\TestPy\NoMoreIntros\NoMoreIntros\NoMoreIntros\NoMoreIntros.ico"
 File "C:\Users\daniel.perez\Documents\pruebas\TestPy\NoMoreIntros\NoMoreIntros\NoMoreIntros\libopenblas.UWVN3XTD2LSS7SFIFK6TIQ5GONFDBJKU.gfortran-win32.dll"
 File "C:\Users\daniel.perez\Documents\pruebas\TestPy\NoMoreIntros\NoMoreIntros\NoMoreIntros\mfc140u.dll"
