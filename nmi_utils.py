@@ -1,5 +1,6 @@
 import os
 
+
 # ----------------------------------------------------------------------
 def copy_ffmpeg():
     """Copy ffmpeg file directly without downloading for windows users"""
@@ -8,9 +9,9 @@ def copy_ffmpeg():
 
 
 # ----------------------------------------------------------------------
-def RemoveDuplicated(self, X, Y):
+def remove_duplicated(x, y):
     """Get two lists and remove duplications in Y (filenames)"""
-    for A in X:
-        for B in Y:
-            if A == B:
-                Y.remove(B)
+    for a in x:
+        for b in y:
+            if (a == b):
+                y.remove(b)

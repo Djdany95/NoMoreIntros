@@ -1,13 +1,15 @@
-import nmiConfig
-import nmiUtils
 import datetime
 import multiprocessing
 import os
 import stat
+
 import i18n
 import wx
 from imageio.plugins import ffmpeg
 from ObjectListView import ColumnDefn, FastObjectListView
+
+import nmi_config
+import nmi_utils
 
 
 ########################################################################
@@ -24,9 +26,9 @@ class VideoDropTarget(wx.FileDropTarget):
     # ----------------------------------------------------------------------
     def OnDropFiles(self, x, y, filenames):
         """When files are dropped, update the display """
-        nmiUtils.RemoveDuplicated(self.all_filenames, filenames)
+        nmi_utils.remove_duplicated(self.all_filenames, filenames)
         self.all_filenames += filenames
-        self.window.updateDisplay(filenames)
+        self.window.update_display(filenames)
         return True
 
 ########################################################################
@@ -45,12 +47,18 @@ class MainPanel(wx.Panel):
         wx.Panel.__init__(self, parent=parent)
         self.videos_list = []
 
-        self.primaryBackgroundColor = theme.get("primaryBackgroundColor")
-        self.secondaryBackgroundColor = theme.get("secondaryBackgroundColor")
-        self.foregroundColor = theme.get("foregroundColor")
+        self.primary_background_color = theme.get("primaryBackgroundColor")
+        self.secondary_background_color = theme.get("secondaryBackgroundColor")
+        self.foreground_color = theme.get("foregroundColor")
+        self.list_font = wx.Font(pointSize=11, family=wx.FONTFAMILY_SWISS, style=wx.FONTSTYLE_NORMAL,
+                                 weight=wx.FONTWEIGHT_LIGHT, underline=False, faceName='Roboto')
+        self.regular_font = wx.Font(pointSize=12, family=wx.FONTFAMILY_SWISS, style=wx.FONTSTYLE_NORMAL,
+                                    weight=wx.FONTWEIGHT_NORMAL, underline=False, faceName='Roboto')
+        self.big_font = wx.Font(pointSize=32, family=wx.FONTFAMILY_SWISS, style=wx.FONTSTYLE_NORMAL,
+                                weight=wx.FONTWEIGHT_BOLD, underline=False, faceName='Roboto')
 
-        self.SetBackgroundColour(self.primaryBackgroundColor)
-        self.SetForegroundColour(self.foregroundColor)
+        self.SetBackgroundColour(self.primary_background_color)
+        self.SetForegroundColour(self.foreground_color)
 
         video_drop_target = VideoDropTarget(self)
         self.olv = FastObjectListView(
@@ -58,85 +66,90 @@ class MainPanel(wx.Panel):
         self.olv.SetEmptyListMsg(i18n.t('i18n.emptyList'))
         self.olv.SetDropTarget(video_drop_target)
         self.olv.cellEditMode = FastObjectListView.CELLEDIT_NONE
-        self.setFiles()
+        self.olv.SetEmptyListMsgFont(self.big_font)
+        self.olv.SetFont(self.list_font)
+        self.set_files()
 
         self.sizer = wx.BoxSizer(wx.VERTICAL)
-        self.olv.Bind(wx.EVT_KEY_UP, self.OnDelete)
+        self.olv.Bind(wx.EVT_KEY_UP, self.on_delete)
         self.sizer.Add(self.olv, 1, wx.EXPAND)
 
         grid1 = wx.GridSizer(1, 3, 1, 10)
         grid2 = wx.GridSizer(1, 3, 1, 10)
 
-        self.lblCutInitSec = wx.StaticText(
+        self.lbl_cut_init = wx.StaticText(
             self, -1, i18n.t('i18n.lblCutInitSec'))
-        self.lblCutInitSec.SetFont(wx.Font(wx.FontInfo(pointSize=12)))
+        self.lbl_cut_init.SetFont(self.regular_font)
 
-        self.txtCutInitSec = wx.TextCtrl(
+        self.txt_cut_init = wx.TextCtrl(
             self, -1, "0", size=(175, -1), style=wx.BORDER_STATIC)
-        self.txtCutInitSec.SetBackgroundColour(self.secondaryBackgroundColor)
-        self.txtCutInitSec.SetForegroundColour(self.foregroundColor)
-        self.txtCutInitSec.SetFont(wx.Font(wx.FontInfo(pointSize=12)))
+        self.txt_cut_init.SetBackgroundColour(self.secondary_background_color)
+        self.txt_cut_init.SetForegroundColour(self.foreground_color)
+        self.txt_cut_init.SetFont(self.regular_font)
 
-        self.lblCutEndSec = wx.StaticText(
-            self, -1, i18n.t('i18n.lblCutEndSec'))
-        self.lblCutEndSec.SetFont(wx.Font(wx.FontInfo(pointSize=12)))
+        self.lbl_cut_end = wx.StaticText(self, -1, i18n.t('i18n.lblCutEndSec'))
+        self.lbl_cut_end.SetFont(self.regular_font)
 
-        self.txtCutEndSec = wx.TextCtrl(
+        self.txt_cut_end = wx.TextCtrl(
             self, -1, "0", size=(175, -1), style=wx.BORDER_STATIC)
-        self.txtCutEndSec.SetBackgroundColour(self.secondaryBackgroundColor)
-        self.txtCutEndSec.SetForegroundColour(self.foregroundColor)
-        self.txtCutEndSec.SetFont(wx.Font(wx.FontInfo(pointSize=12)))
+        self.txt_cut_end.SetBackgroundColour(self.secondary_background_color)
+        self.txt_cut_end.SetForegroundColour(self.foreground_color)
+        self.txt_cut_end.SetFont(self.regular_font)
 
-        self.chkDelete = wx.CheckBox(self, -1, i18n.t('i18n.chkDelete'))
-        self.chkDelete.SetFont(wx.Font(wx.FontInfo(pointSize=12)))
+        self.chk_delete = wx.CheckBox(self, -1, i18n.t('i18n.chkDelete'))
+        self.chk_delete.SetFont(self.regular_font)
 
-        grid1.AddMany([self.lblCutInitSec, self.lblCutEndSec])
+        grid1.AddMany([self.lbl_cut_init, self.lbl_cut_end])
         grid1.AddSpacer(0)
-        grid2.AddMany([self.txtCutInitSec, self.txtCutEndSec, self.chkDelete])
+        grid2.AddMany([self.txt_cut_init, self.txt_cut_end, self.chk_delete])
 
-        self.btnCut = wx.Button(
+        self.btn_cut = wx.Button(
             self, -1, i18n.t('i18n.btnCut'), size=(100, 50), style=wx.BORDER_NONE)
-        self.btnCut.Bind(wx.EVT_BUTTON, self.OnCut)
-        self.btnCut.SetBackgroundColour(self.secondaryBackgroundColor)
-        self.btnCut.SetForegroundColour(self.foregroundColor)
-        self.btnCut.SetFont(wx.Font(wx.FontInfo(pointSize=30)))
+        self.btn_cut.Bind(wx.EVT_BUTTON, self.on_cut)
+        self.btn_cut.SetBackgroundColour(self.secondary_background_color)
+        self.btn_cut.SetForegroundColour(self.foreground_color)
+        self.btn_cut.SetFont(self.big_font)
 
         self.sizer.AddSpacer(20)
         self.sizer.Add(grid1, 0, wx.EXPAND | wx.LEFT | wx.BOTTOM, 10)
         self.sizer.Add(grid2, 0, wx.EXPAND | wx.LEFT, 10)
         self.sizer.AddSpacer(20)
-        self.sizer.Add(self.btnCut, 0, wx.EXPAND)
+        self.sizer.Add(self.btn_cut, 0, wx.EXPAND)
         self.SetSizer(self.sizer)
 
     # ----------------------------------------------------------------------
-    def updateDisplay(self, videos_list):
+    def update_display(self, videos_list):
         """
         Triggered when dropped items,
         get the item and transform it into VideoInfo with parameters
         to use it in ObjectListView
         """
-        import nmiVideoUtils
+        import nmi_video
         for path in videos_list:
             file_stats = os.stat(path)
             try:
-                clip_duration = nmiVideoUtils.get_video_duration(path)
+                clip_duration = nmi_video.get_video_duration(path)
             except:
                 wx.MessageBox(i18n.t('i18n.onlyVideosError'),
                               "Error", wx.ICON_ERROR)
                 return
-            minutes_lenght = str(datetime.timedelta(
-                seconds=clip_duration))
+            minutes_lenght = str(datetime.timedelta(seconds=clip_duration))
             file_size = file_stats[stat.ST_SIZE]
-            if file_size > 1024:
+            if (file_size > 1024):
                 file_size = file_size / 1024.0
-                file_size = "%.2f KB" % file_size
+                if (file_size > 1024.0):
+                    file_size = file_size / 1024.0
+                    file_size = "%.2f MB" % file_size
+                else:
+                    file_size = "%.2f KB" % file_size
 
-            self.videos_list.append(nmiVideoUtils.VideoInfo(path, minutes_lenght, file_size))
+            self.videos_list.append(nmi_video.VideoInfo(
+                path, minutes_lenght, file_size))
 
         self.olv.SetObjects(self.videos_list)
 
     # ----------------------------------------------------------------------
-    def setFiles(self):
+    def set_files(self):
         """Set the columns for items dropped"""
         self.olv.SetColumns([
             ColumnDefn(i18n.t('i18n.colName'), "left",
@@ -148,36 +161,33 @@ class MainPanel(wx.Panel):
         self.olv.SetObjects(self.videos_list)
 
     # ----------------------------------------------------------------------
-    def OnCut(self, event):
+    def on_cut(self, event):
         """
         Trigger when click on CUT Button,
         Get parameters and in a for loop cut videos calling the function
         """
-        import nmiVideoUtils
+        import nmi_video
         try:
-            beginning = int(self.txtCutInitSec.GetLineText(1))
-            end = int(self.txtCutEndSec.GetLineText(1))
-            delete = self.chkDelete.GetValue()
+            beginning = int(self.txt_cut_init.GetLineText(1))
+            end = int(self.txt_cut_end.GetLineText(1))
+            delete = self.chk_delete.GetValue()
             delete_videos_list = list()
         except:
-            wx.MessageBox(
-                i18n.t('i18n.onlyNumberError'), "Error", wx.ICON_ERROR)
+            wx.MessageBox(i18n.t('i18n.onlyNumberError'),
+                          "Error", wx.ICON_ERROR)
             return
 
-        if self.videos_list:
+        if (self.videos_list is True):
             c = 0
             list_count = len(self.videos_list)
-            dialog = wx.ProgressDialog(i18n.t('i18n.cutProgressTitle'),
-                                       i18n.t('i18n.cutProgress') +
-                                       str(c)+'/'+str(list_count),
-                                       maximum=list_count, style=wx.PD_SMOOTH |
-                                       wx.PD_CAN_ABORT | wx.PD_AUTO_HIDE)
+            dialog = wx.ProgressDialog(i18n.t('i18n.cutProgressTitle'), i18n.t('i18n.cutProgress') + str(
+                c)+'/'+str(list_count), maximum=list_count, style=wx.PD_SMOOTH | wx.PD_CAN_ABORT | wx.PD_AUTO_HIDE)
             for file in self.videos_list:
-                cut = nmiVideoUtils.cut_video(beginning, end, file)
-                if(cut.get('state')):
+                cut = nmi_video.cut_video(beginning, end, file)
+                if (cut.get('state') is True):
                     delete_videos_list.append(file)
                     c += 1
-                    if dialog.WasCancelled() is True:
+                    if (dialog.WasCancelled() is True):
                         wx.MessageBox(i18n.t('i18n.cutCancel'),
                                       "Error", wx.ICON_ERROR)
                         break
@@ -187,16 +197,16 @@ class MainPanel(wx.Panel):
                 self.videos_list.remove(file)
             self.olv.RemoveObjects(delete_videos_list)
             self.olv.SetObjects(self.videos_list)
-            wx.MessageBox(str(c) +
-                          i18n.t('i18n.cutVideos'), "OK", wx.ICON_INFORMATION)
+            wx.MessageBox(str(c) + i18n.t('i18n.cutVideos'),
+                          "OK", wx.ICON_INFORMATION)
         else:
             wx.MessageBox(i18n.t('i18n.noCutVideosError'),
                           "Error", wx.ICON_ERROR)
             return
 
-        if(delete is True):
+        if (delete is True):
             try:
-                nmiVideoUtils.delete_videos(delete_videos_list)
+                nmi_video.delete_videos(delete_videos_list)
                 wx.MessageBox(i18n.t('i18n.deletedOld'),
                               "OK", wx.ICON_INFORMATION)
             except:
@@ -204,10 +214,9 @@ class MainPanel(wx.Panel):
                               "Error", wx.ICON_ERROR)
 
     # ----------------------------------------------------------------------
-    def OnDelete(self, event):
+    def on_delete(self, event):
         """Trigger the event when user delete item from list with SUPR"""
-        if(event.GetUnicodeKey() == 127 and
-           self.olv.GetSelectedItemCount() > 0):
+        if (event.GetUnicodeKey() == 127 and self.olv.GetSelectedItemCount() > 0):
             for i in self.olv.GetSelectedObjects():
                 self.videos_list.remove(i)
             self.olv.RemoveObjects(self.olv.GetSelectedObjects())
@@ -227,132 +236,135 @@ class MainFrame(wx.Frame):
         """
         wx.Frame.__init__(self, None, title="NoMoreIntros", size=(570, 400))
 
-        menuBar = wx.MenuBar()
+        menubar = wx.MenuBar()
 
-        configMenu = wx.Menu()
-        helpMenu = wx.Menu()
+        config_menu = wx.Menu()
+        help_menu = wx.Menu()
 
-        themeMenu = wx.Menu()
+        theme_menu = wx.Menu()
 
-        lightItem = wx.MenuItem(themeMenu, 1, text=i18n.t(
+        light_theme = wx.MenuItem(theme_menu, 1, text=i18n.t(
             'i18n.lightTheme'), kind=wx.ITEM_RADIO)
-        themeMenu.Append(lightItem)
+        theme_menu.Append(light_theme)
 
-        darkItem = wx.MenuItem(themeMenu, 2, text=i18n.t(
+        dark_theme = wx.MenuItem(theme_menu, 2, text=i18n.t(
             'i18n.darkTheme'), kind=wx.ITEM_RADIO)
-        themeMenu.Append(darkItem)
+        theme_menu.Append(dark_theme)
 
-        if(theme.get("name") == 'lightTheme'):
-            lightItem.Check()
+        if (theme.get("name") == 'lightTheme'):
+            light_theme.Check()
         else:
-            darkItem.Check()
+            dark_theme.Check()
 
-        configMenu.Append(wx.ID_ANY, i18n.t('i18n.themeMenu'), themeMenu)
-        configMenu.AppendSeparator()
+        config_menu.Append(wx.ID_ANY, i18n.t(
+            'i18n.themeMenuTitle'), theme_menu)
+        config_menu.AppendSeparator()
 
-        langMenu = wx.Menu()
+        lang_menu = wx.Menu()
 
-        es = wx.MenuItem(langMenu, 3, text="Español", kind=wx.ITEM_RADIO)
-        langMenu.Append(es)
+        es_lang = wx.MenuItem(lang_menu, 3, text="Español", kind=wx.ITEM_RADIO)
+        lang_menu.Append(es_lang)
 
-        en = wx.MenuItem(langMenu, 4, text="English", kind=wx.ITEM_RADIO)
-        langMenu.Append(en)
+        en_lang = wx.MenuItem(lang_menu, 4, text="English", kind=wx.ITEM_RADIO)
+        lang_menu.Append(en_lang)
 
-        if(lang == 'es'):
-            es.Check()
+        if (lang == 'es'):
+            es_lang.Check()
         else:
-            en.Check()
+            en_lang.Check()
 
-        configMenu.Append(wx.ID_ANY, i18n.t('i18n.langMenu'), langMenu)
-        configMenu.AppendSeparator()
+        config_menu.Append(wx.ID_ANY, i18n.t('i18n.langMenuTitle'), lang_menu)
+        config_menu.AppendSeparator()
 
-        quit = wx.MenuItem(configMenu, wx.ID_EXIT, i18n.t('i18n.quit'))
+        quit = wx.MenuItem(config_menu, wx.ID_EXIT, i18n.t('i18n.quit'))
 
-        configMenu.Append(quit)
+        config_menu.Append(quit)
 
-        menuBar.Append(configMenu, i18n.t('i18n.configMenuTitle'))
+        menubar.Append(config_menu, i18n.t('i18n.configMenuTitle'))
 
-        checkUpdates = wx.MenuItem(helpMenu, 5, text=i18n.t(
+        check_updates = wx.MenuItem(help_menu, 5, text=i18n.t(
             'i18n.checkUpdatesMenu'), kind=wx.ITEM_NORMAL)
-        helpMenu.Append(checkUpdates)
-        helpMenu.AppendSeparator()
-        openHelp = wx.MenuItem(helpMenu, 6, text=i18n.t(
+        help_menu.Append(check_updates)
+        help_menu.AppendSeparator()
+        openHelp = wx.MenuItem(help_menu, 6, text=i18n.t(
             'i18n.openHelpMenu'), kind=wx.ITEM_NORMAL)
-        helpMenu.Append(openHelp)
-        helpMenu.AppendSeparator()
+        help_menu.Append(openHelp)
+        help_menu.AppendSeparator()
 
-        about = wx.MenuItem(helpMenu, 7, text=i18n.t(
-            'i18n.aboutMenu'), kind=wx.ITEM_NORMAL)
-        helpMenu.Append(about)
+        about = wx.MenuItem(help_menu, 7, text=i18n.t(
+            'i18n.aboutMenuTitle'), kind=wx.ITEM_NORMAL)
+        help_menu.Append(about)
 
-        menuBar.Append(helpMenu, i18n.t('i18n.helpMenuTitle'))
+        menubar.Append(help_menu, i18n.t('i18n.helpMenuTitle'))
 
         panel = MainPanel(self, theme)
 
         ico = wx.Icon('NoMoreIntros.ico', wx.BITMAP_TYPE_ICO)
 
         self.SetIcon(ico)
-        self.SetMinSize(wx.Size(570, 400))
-        self.SetMenuBar(menuBar)
-        self.Bind(wx.EVT_MENU, self.menuhandler)
+        self.SetMinSize(wx.Size(700, 500))
+        self.SetMenuBar(menubar)
+        self.Bind(wx.EVT_MENU, self.menu_handler)
         self.Show()
 
     # ----------------------------------------------------------------------
-    def menuhandler(self, event):
+    def menu_handler(self, event):
         """Menu buttons event handler"""
         id = event.GetId()
-        if(id == wx.ID_EXIT):
+        if (id == wx.ID_EXIT):
             raise SystemExit
-        elif(id == 1):
-            if(nmiConfig.setTheme("lightTheme") == True):
-                self.reloadApp()
-        elif(id == 2):
-            if(nmiConfig.setTheme("darkTheme") == True):
-                self.reloadApp()
-        elif(id == 3):
-            if(nmiConfig.setLanguage("es") == True):
-                self.reloadApp()
-        elif(id == 4):
-            if(nmiConfig.setLanguage("en") == True):
-                self.reloadApp()
-        elif(id == 5):
-            update = nmiConfig.checkUpdate()
-            if(update == False):
+        elif (id == 1):
+            if (nmi_config.set_theme("lightTheme") is True):
+                self.reload_app()
+        elif (id == 2):
+            if (nmi_config.set_theme("darkTheme") is True):
+                self.reload_app()
+        elif (id == 3):
+            if (nmi_config.set_language("es") is True):
+                self.reload_app()
+        elif (id == 4):
+            if (nmi_config.set_language("en") is True):
+                self.reload_app()
+        elif (id == 5):
+            update = nmi_config.check_update()
+            if (update is False):
                 wx.MessageBox(i18n.t('i18n.noUpdates'),
                               "OK", wx.ICON_INFORMATION)
             else:
-                dlg = wx.MessageDialog(
-                    self, i18n.t('i18n.updateDialog'), 'Updater', wx.YES_NO | wx.ICON_EXCLAMATION)
+                dlg = wx.MessageDialog(self, i18n.t(
+                    'i18n.updateDialog'), 'Updater', wx.YES_NO | wx.ICON_EXCLAMATION)
                 result = dlg.ShowModal()
 
-                if result == wx.ID_YES:
+                if (result == wx.ID_YES):
                     thread = multiprocessing.Process(
-                        target=nmiConfig.downloadLatestVersion)
-                    progressDialog(thread, i18n.t('i18n.updateProgressTitle'), i18n.t(
+                        target=nmi_config.download_latest_version)
+                    create_progress_dialog(thread, i18n.t('i18n.updateProgressTitle'), i18n.t(
                         'i18n.updateProgressMsg'), i18n.t('i18n.updateCancel'), i18n.t('i18n.updateDownloaded'))
-        elif(id == 6):
-            aboutInfo = wx.adv.AboutDialogInfo()
-            aboutInfo.SetName(i18n.t('i18n.helpTitle'))
-            aboutInfo.SetCopyright("(C) 2018 djdany01")
-            aboutInfo.SetDescription(i18n.t('i18n.helpDescription'))
-            aboutInfo.SetWebSite("https://github.com/djdany01/NoMoreIntros/issues", "NoMoreIntros-Issues")
+        elif (id == 6):
+            about_info = wx.adv.AboutDialogInfo()
+            about_info.SetName(i18n.t('i18n.helpTitle'))
+            about_info.SetCopyright("(C) 2018 djdany01")
+            about_info.SetDescription(i18n.t('i18n.helpDescription'))
+            about_info.SetWebSite(
+                "https://github.com/djdany01/NoMoreIntros/issues", "NoMoreIntros-Issues")
 
-            wx.adv.AboutBox(aboutInfo, self)
-        elif(id == 7):
-            aboutInfo = wx.adv.AboutDialogInfo()
-            aboutInfo.SetName("NoMoreIntros")
-            aboutInfo.SetVersion(str(nmiConfig.getVersion()))
-            aboutInfo.SetDescription(i18n.t('i18n.aboutDescription'))
-            aboutInfo.SetCopyright("(C) 2018 djdany01")
-            aboutInfo.SetWebSite("https://github.com/djdany01/NoMoreIntros", "NoMoreIntros-Github")
+            wx.adv.AboutBox(about_info, self)
+        elif (id == 7):
+            about_info = wx.adv.AboutDialogInfo()
+            about_info.SetName("NoMoreIntros")
+            about_info.set_version(str(nmi_config.get_version()))
+            about_info.SetDescription(i18n.t('i18n.aboutDescription'))
+            about_info.SetCopyright("(C) 2018 djdany01")
+            about_info.SetWebSite(
+                "https://github.com/djdany01/NoMoreIntros", "NoMoreIntros-Github")
 
-            wx.adv.AboutBox(aboutInfo, self)
+            wx.adv.AboutBox(about_info, self)
 
     # ----------------------------------------------------------------------
-    def reloadApp(self):
+    def reload_app(self):
         """Reload the entire app closing it and creating a new instance with the new config"""
         self.Close()
-        main(nmiConfig.getLanguage(), nmiConfig.getTheme())
+        main(nmi_config.get_language(), nmi_config.get_theme())
         raise SystemExit
 
 ########################################################################
@@ -362,19 +374,19 @@ class MainFrame(wx.Frame):
 def check_ffmpeg():
     """Checks before all if user has FFMPEG dependency, if not downloads it"""
     try:
-        import nmiVideoUtils
+        import nmi_video
     except:
         wx.MessageBox(i18n.t('i18n.ffmpegNotFound'), "Error", wx.ICON_ERROR)
-        if(os.path.isdir(os.getenv('LOCALAPPDATA'))):
-            thread = multiprocessing.Process(target=nmiUtils.copy_ffmpeg)
+        if (os.path.isdir(os.getenv('LOCALAPPDATA')) is True):
+            thread = multiprocessing.Process(target=nmi_utils.copy_ffmpeg)
         else:
             thread = multiprocessing.Process(target=ffmpeg.download)
-        progressDialog(thread, i18n.t('i18n.ffmpegProgressTitle'), i18n.t(
+        create_progress_dialog(thread, i18n.t('i18n.ffmpegProgressTitle'), i18n.t(
             'i18n.ffmpegProgressMsg'), i18n.t('i18n.ffmpegCancel'), i18n.t('i18n.ffmpegDownloaded'))
 
 
 # ----------------------------------------------------------------------
-def progressDialog(thread, title, msg, error, ok):
+def create_progress_dialog(thread, title, msg, error, ok):
     """
     Create a new progress Dialog with the given thread and messages passed for:
      Window title, Window message, Error message and ok message
@@ -386,7 +398,7 @@ def progressDialog(thread, title, msg, error, ok):
         maximum=1, style=wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT)
     while thread.is_alive():
         dialog.Pulse()
-        if dialog.WasCancelled() is True:
+        if (dialog.WasCancelled() is True):
             thread.terminate()
             wx.MessageBox(error, "Error", wx.ICON_ERROR)
             return
@@ -410,7 +422,7 @@ def main(lang, theme):
     app.MainLoop()
 
 
-if __name__ == "__main__":
+if (__name__ == "__main__"):
     multiprocessing.freeze_support()  # Needed to use multiprocessing with pyinstaller
-    nmiConfig.getConfig()
-    main(nmiConfig.getLanguage(), nmiConfig.getTheme())
+    nmi_config.get_config()
+    main(nmi_config.get_language(), nmi_config.get_theme())

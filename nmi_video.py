@@ -1,8 +1,10 @@
 import os
 import time
 import psutil
+
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 from moviepy.video.io.VideoFileClip import VideoFileClip
+
 
 class VideoInfo(object):
     """Class who defines de VideoInfo object used in dropped items"""
@@ -16,6 +18,7 @@ class VideoInfo(object):
         self.size = size
 
 ########################################################################
+
 
 # ----------------------------------------------------------------------
 def get_video_duration(path):
@@ -71,6 +74,6 @@ def delete_videos(videos_delete):
 def kill_ffmpeg():
     """Kill FFMPEG process because of write permission"""
     for proc in psutil.process_iter():
-        if 'ffmpeg' in proc.name():
+        if ('ffmpeg' in proc.name()):
             print(proc.name)
             proc.kill()
