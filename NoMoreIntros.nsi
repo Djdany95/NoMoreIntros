@@ -1,4 +1,4 @@
-############################################################################################
+﻿############################################################################################
 #      NSIS Installation Script created by NSIS Quick Setup Script Generator v1.09.18
 #               Entirely Edited with NullSoft Scriptable Installation System
 #              by Vlasis K. Barkas aka Red Wine red_wine@freemail.gr Sep 2006
@@ -7,7 +7,7 @@
 !define APP_NAME "NoMoreIntros"
 !define COMP_NAME "Djdany01"
 !define WEB_SITE "https://github.com/djdany01/NoMoreIntros"
-!define VERSION "1.1.0.0"
+!define VERSION "2.0.0.0"
 !define COPYRIGHT "Djdany01  � 2018"
 !define DESCRIPTION "Application to cut videos in batch process."
 !define INSTALLER_NAME "C:\Users\daniel.perez\Documents\pruebas\TestPy\NoMoreIntros\NMI-Installer.exe"

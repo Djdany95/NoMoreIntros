@@ -17,7 +17,7 @@ themes = {"darkTheme": {
     "foregroundColor": Colour(72, 72, 72)
 }}
 
-config = {"version": 1.1, "language": "es", "theme": "lightTheme"}
+config = {"version": 2.0, "language": "es", "theme": "lightTheme"}
 
 
 ## ---------- CONFIG ---------- ##
