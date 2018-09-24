@@ -177,7 +177,7 @@ class MainPanel(wx.Panel):
                           "Error", wx.ICON_ERROR)
             return
 
-        if (self.videos_list is True):
+        if (len(self.videos_list) > 0):
             c = 0
             list_count = len(self.videos_list)
             dialog = wx.ProgressDialog(i18n.t('i18n.cutProgressTitle'), i18n.t('i18n.cutProgress') + str(
@@ -229,12 +229,12 @@ class MainFrame(wx.Frame):
     """Main window of the application"""
 
     # ----------------------------------------------------------------------
-    def __init__(self, lang, theme):
+    def __init__(self, lang, theme, pos, size):
         """
         Constructor
         Sets width, name and icon of the window
         """
-        wx.Frame.__init__(self, None, title="NoMoreIntros", size=(570, 400))
+        wx.Frame.__init__(self, None, title="NoMoreIntros", pos=pos, size=size)
 
         menubar = wx.MenuBar()
 
@@ -302,7 +302,7 @@ class MainFrame(wx.Frame):
         ico = wx.Icon('NoMoreIntros.ico', wx.BITMAP_TYPE_ICO)
 
         self.SetIcon(ico)
-        self.SetMinSize(wx.Size(700, 500))
+        self.SetMinSize(wx.Size(570, 400))
         self.SetMenuBar(menubar)
         self.Bind(wx.EVT_MENU, self.menu_handler)
         self.Show()
@@ -352,7 +352,7 @@ class MainFrame(wx.Frame):
         elif (id == 7):
             about_info = wx.adv.AboutDialogInfo()
             about_info.SetName("NoMoreIntros")
-            about_info.set_version(str(nmi_config.get_version()))
+            about_info.SetVersion(str(nmi_config.get_version()))
             about_info.SetDescription(i18n.t('i18n.aboutDescription'))
             about_info.SetCopyright("(C) 2018 djdany01")
             about_info.SetWebSite(
@@ -363,8 +363,10 @@ class MainFrame(wx.Frame):
     # ----------------------------------------------------------------------
     def reload_app(self):
         """Reload the entire app closing it and creating a new instance with the new config"""
+        pos = self.GetPosition()
+        size = self.GetSize()
         self.Close()
-        main(nmi_config.get_language(), nmi_config.get_theme())
+        main(nmi_config.get_language(), nmi_config.get_theme(), pos, size)
         raise SystemExit
 
 ########################################################################
@@ -408,7 +410,7 @@ def create_progress_dialog(thread, title, msg, error, ok):
 
 
 # ----------------------------------------------------------------------
-def main(lang, theme):
+def main(lang, theme, pos, size):
     """
     Main loop
     Sets i18n, check FFMPEG dependency and init the MainWindow
@@ -417,7 +419,7 @@ def main(lang, theme):
     i18n.set('fallback', 'en')
     i18n.load_path.append('./lang/')
     app = wx.App(False)
-    frame = MainFrame(lang, theme)
+    frame = MainFrame(lang, theme, pos, size)
     check_ffmpeg()
     app.MainLoop()
 
@@ -425,4 +427,4 @@ def main(lang, theme):
 if (__name__ == "__main__"):
     multiprocessing.freeze_support()  # Needed to use multiprocessing with pyinstaller
     nmi_config.get_config()
-    main(nmi_config.get_language(), nmi_config.get_theme())
+    main(nmi_config.get_language(), nmi_config.get_theme(), (200, 200), (570, 400))

@@ -36,7 +36,7 @@
     "onlyNumberError": "Input seconds in number.",
     "noCutVideosError": "There aren't videos to cut.",
     "cutProgressTitle": "Cutting...",
-    "cutProgress": "Progress",
+    "cutProgress": "Progress ",
     "cutCancel": "Operation was cancelled.",
     "cutVideos": " cut videos.",
     "permisionError": "Permission error when deleting.",

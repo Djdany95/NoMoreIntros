@@ -36,7 +36,7 @@
     "onlyNumberError": "Tiene que introducir los segundos con números.",
     "noCutVideosError": "No hay videos para cortar.",
     "cutProgressTitle": "Cortando...",
-    "cutProgress": "Progreso",
+    "cutProgress": "Progreso ",
     "cutCancel": "Se ha cancelado la operación.",
     "cutVideos": " videos cortados.",
     "permisionError": "Error de permisos al borrar.",
