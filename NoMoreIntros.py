@@ -129,9 +129,10 @@ class MainPanel(wx.Panel):
             file_stats = os.stat(path)
             try:
                 clip_duration = nmi_video.get_video_duration(path)
-            except:
-                wx.MessageBox(i18n.t('i18n.onlyVideosError'),
-                              "Error", wx.ICON_ERROR)
+            except Exception as e:
+                dialog = wx.RichMessageDialog(self, i18n.t('i18n.onlyVideosError'), "Error", wx.ICON_ERROR)
+                dialog.ShowDetailedText("Error info:\n" + "\\" + str(e) + "\\")
+                dialog.ShowModal()
                 return
             minutes_lenght = str(datetime.timedelta(seconds=clip_duration))
             file_size = file_stats[stat.ST_SIZE]
@@ -172,9 +173,10 @@ class MainPanel(wx.Panel):
             end = int(self.txt_cut_end.GetLineText(1))
             delete = self.chk_delete.GetValue()
             delete_videos_list = list()
-        except:
-            wx.MessageBox(i18n.t('i18n.onlyNumberError'),
-                          "Error", wx.ICON_ERROR)
+        except Exception as e:
+            dialog = wx.RichMessageDialog(self, i18n.t('i18n.onlyNumberError'), "Error", wx.ICON_ERROR)
+            dialog.ShowDetailedText("Error info:\n" + "\\" + str(e) + "\\")
+            dialog.ShowModal()
             return
 
         if (len(self.videos_list) > 0):
@@ -188,8 +190,8 @@ class MainPanel(wx.Panel):
                     delete_videos_list.append(file)
                     c += 1
                     if (dialog.WasCancelled() is True):
-                        wx.MessageBox(i18n.t('i18n.cutCancel'),
-                                      "Error", wx.ICON_ERROR)
+                        dialog = wx.RichMessageDialog(self, i18n.t('i18n.cutCancel'), "Error", wx.ICON_ERROR)
+                        dialog.ShowModal()
                         break
                     dialog.Update(c, i18n.t('i18n.cutProgress') +
                                   str(c+1)+'/'+str(list_count))
@@ -200,8 +202,8 @@ class MainPanel(wx.Panel):
             wx.MessageBox(str(c) + i18n.t('i18n.cutVideos'),
                           "OK", wx.ICON_INFORMATION)
         else:
-            wx.MessageBox(i18n.t('i18n.noCutVideosError'),
-                          "Error", wx.ICON_ERROR)
+            dialog = wx.RichMessageDialog(self, i18n.t('i18n.noCutVideosError'), "Error", wx.ICON_ERROR)
+            dialog.ShowModal()
             return
 
         if (delete is True):
@@ -209,9 +211,10 @@ class MainPanel(wx.Panel):
                 nmi_video.delete_videos(delete_videos_list)
                 wx.MessageBox(i18n.t('i18n.deletedOld'),
                               "OK", wx.ICON_INFORMATION)
-            except:
-                wx.MessageBox(i18n.t('i18n.permisionError'),
-                              "Error", wx.ICON_ERROR)
+            except Exception as e:
+                dialog = wx.RichMessageDialog(self, i18n.t('i18n.permisionError'), "Error", wx.ICON_ERROR)
+                dialog.ShowDetailedText("Error info:\n" + "\\" + str(e) + "\\")
+                dialog.ShowModal()
 
     # ----------------------------------------------------------------------
     def on_delete(self, event):
@@ -377,8 +380,10 @@ def check_ffmpeg():
     """Checks before all if user has FFMPEG dependency, if not downloads it"""
     try:
         import nmi_video
-    except:
-        wx.MessageBox(i18n.t('i18n.ffmpegNotFound'), "Error", wx.ICON_ERROR)
+    except Exception as e:
+        dialog = wx.RichMessageDialog(self, i18n.t('i18n.ffmpegNotFound'), "Error", wx.ICON_ERROR)
+        dialog.ShowDetailedText("Error info:\n" + "\\" + str(e) + "\\")
+        dialog.ShowModal()
         if (os.path.isdir(os.getenv('LOCALAPPDATA')) is True):
             thread = multiprocessing.Process(target=nmi_utils.copy_ffmpeg)
         else:
@@ -402,7 +407,8 @@ def create_progress_dialog(thread, title, msg, error, ok):
         dialog.Pulse()
         if (dialog.WasCancelled() is True):
             thread.terminate()
-            wx.MessageBox(error, "Error", wx.ICON_ERROR)
+            dialog = wx.RichMessageDialog(self, error, "Error", wx.ICON_ERROR)
+            dialog.ShowModal()
             return
     else:
         dialog.Update(1)
